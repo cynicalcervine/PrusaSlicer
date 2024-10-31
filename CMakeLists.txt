@@ -48,6 +48,9 @@ option(SLIC3R_REPO_URL          "Preset repo URL")
 # SLIC3R_OPENGL_ES can be enabled only if SLIC3R_GUI is enabled.
 CMAKE_DEPENDENT_OPTION(SLIC3R_OPENGL_ES "Compile PrusaSlicer targeting OpenGL ES" OFF "SLIC3R_GUI" OFF)
 
+# If SLIC3R_WEBKIT is enabled we must have SLIC3R_GUI enabled as well.
+CMAKE_DEPENDENT_OPTION(SLIC3R_WEBKIT "Enable webkit for cloud functionality." ON "SLIC3R_GUI" OFF)
+
 # If SLIC3R_FHS is 1 -> SLIC3R_DESKTOP_INTEGRATION is always 0, otherwise variable.
 CMAKE_DEPENDENT_OPTION(SLIC3R_DESKTOP_INTEGRATION "Allow perfoming desktop integration during runtime" 1 "NOT SLIC3R_FHS" 0)
 
@@ -116,6 +119,10 @@ endif()
 
 if(SLIC3R_DESKTOP_INTEGRATION)
     add_definitions(-DSLIC3R_DESKTOP_INTEGRATION)
+endif ()
+
+if (SLIC3R_WEBKIT)
+    add_definitions(-DSLIC3R_WEBKIT)
 endif ()
 
 if (MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)

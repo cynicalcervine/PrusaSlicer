@@ -3691,8 +3691,10 @@ void Tab::load_current_preset()
             on_preset_loaded();
         else
             wxGetApp().sidebar().update_objects_list_extruder_column(1);
+#ifdef SLIC3R_WEBKIT
         // Check and show "Physical printer" page if needed
         wxGetApp().show_printer_webview_tab();
+#endif
     }
     // Reload preset pages with the new configuration values.
     reload_config();
@@ -4440,8 +4442,10 @@ void Tab::delete_preset()
         PhysicalPrinter& printer = physical_printers.get_selected_printer();
         if (printer.preset_names.size() == 1) {
             if (m_presets_choice->del_physical_printer(_L("It's a last preset for this physical printer."))) {
+#ifdef SLIC3R_WEBKIT
                 // Hide "Physical printer" page
                 wxGetApp().show_printer_webview_tab();
+#endif
                 Layout();
             }
             return;

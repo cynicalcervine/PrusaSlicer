@@ -97,7 +97,9 @@
 #include "Mouse3DController.hpp"
 #include "Tab.hpp"
 #include "Jobs/ArrangeJob2.hpp"
+#ifdef SLIC3R_WEBKIT
 #include "ConfigWizardWebViewPage.hpp"
+#endif
 
 #include "Jobs/RotoptimizeJob.hpp"
 #include "Jobs/SLAImportJob.hpp"
@@ -125,8 +127,10 @@
 #include "UserAccount.hpp"
 #include "UserAccountUtils.hpp"
 #include "DesktopIntegrationDialog.hpp"
+#ifdef SLIC3R_WEBKIT
 #include "WebViewDialog.hpp"
 #include "ConfigWizardWebViewPage.hpp"
+#endif
 #include "PresetArchiveDatabase.hpp"
 
 #ifdef __APPLE__
@@ -273,9 +277,11 @@ struct Plater::priv
     std::unique_ptr<NotificationManager> notification_manager;
     std::unique_ptr<UserAccount> user_account;
     std::unique_ptr<PresetArchiveDatabase>  preset_archive_database;
+#ifdef SLIC3R_WEBKIT
     // Login dialog needs to be kept somewhere.
     // It is created inside evt Bind. But it might be closed from another event.
     LoginWebViewDialog* login_dialog { nullptr };
+#endif
 
     ProjectDirtyStateManager dirty_state;
      
@@ -860,7 +866,7 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
     this->q->Bind(EVT_INSTANCE_GO_TO_FRONT, [this](InstanceGoToFrontEvent&) {
         bring_instance_forward();
     });
-    // Downloader and USerAccount Events doesnt need to be binded in viewer.
+    // Downloader and UserAccount Events doesnt need to be binded in viewer.
     // Not binding Account events prevents it from loging in.
     if (wxGetApp().is_editor()) {
         this->q->Bind(EVT_START_DOWNLOAD_OTHER_INSTANCE, [](StartDownloadOtherInstanceEvent& evt) {
@@ -874,13 +880,16 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
             BOOST_LOG_TRIVIAL(trace) << "Received login from other instance event.";
             user_account->on_login_code_recieved(evt.data);
         });
+#ifdef SLIC3R_WEBKIT
         this->q->Bind(EVT_LOGIN_VIA_WIZARD, [this](Event<std::string> &evt) {
             BOOST_LOG_TRIVIAL(trace) << "Received login from wizard.";
             user_account->on_login_code_recieved(evt.data);
         });
+#endif
         this->q->Bind(EVT_OPEN_PRUSAAUTH, [this](OpenPrusaAuthEvent& evt) {
             BOOST_LOG_TRIVIAL(info)  << "open login browser: " << evt.data.first;
             std::string dialog_msg;
+#ifdef SLIC3R_WEBKIT
             login_dialog = new LoginWebViewDialog(this->q, dialog_msg, evt.data.first, this->q);
             if (login_dialog->ShowModal() == wxID_OK) {
                 user_account->on_login_code_recieved(dialog_msg);
@@ -890,6 +899,9 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
                 login_dialog->Destroy();
                 login_dialog = nullptr;
             }
+#else
+            BOOST_LOG_TRIVIAL(warning) << "Tried to open login browser, but this feature was disabled.";
+#endif
         });
 
         auto open_external_login = [this](wxCommandEvent& evt){
@@ -914,26 +926,34 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
             wxGetApp().open_login_browser_with_dialog(into_u8(url));
         };
 
+#ifdef SLIC3R_WEBKIT
         this->q->Bind(EVT_OPEN_EXTERNAL_LOGIN_WIZARD, open_external_login);
         this->q->Bind(EVT_OPEN_EXTERNAL_LOGIN, open_external_login);
+#endif
     
         this->q->Bind(EVT_UA_LOGGEDOUT, [this](UserAccountSuccessEvent& evt) {
             user_account->clear();
             std::string text = _u8L("Logged out from Prusa Account.");
             this->notification_manager->close_notification_of_type(NotificationType::UserAccountID);
             this->notification_manager->push_notification(NotificationType::UserAccountID, NotificationManager::NotificationLevel::ImportantNotificationLevel, text);
+#ifdef SLIC3R_WEBKIT
             this->main_frame->remove_connect_webview_tab();
+#endif
             this->main_frame->refresh_account_menu(true);
             // Update sidebar printer status
             sidebar->update_printer_presets_combobox();
+#ifdef SLIC3R_WEBKIT
             wxGetApp().update_wizard_login_page();
+#endif
             this->show_action_buttons(this->ready_to_slice);
         });
 
         this->q->Bind(EVT_UA_ID_USER_SUCCESS, [this](UserAccountSuccessEvent& evt) {
+#ifdef SLIC3R_WEBKIT
             if (login_dialog != nullptr) {
                 login_dialog->EndModal(wxID_CANCEL);
             }
+#endif
             // There are multiple handlers and we want to notify all
             evt.Skip();
             std::string who = user_account->get_username();
@@ -947,10 +967,14 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
                     // show connect tab
                     this->notification_manager->push_notification(NotificationType::UserAccountID, NotificationManager::NotificationLevel::ImportantNotificationLevel, text);
                 }
+#ifdef SLIC3R_WEBKIT
                 this->main_frame->add_connect_webview_tab();
+#endif
                 // Update User name in TopBar
                 this->main_frame->refresh_account_menu();
+#ifdef SLIC3R_WEBKIT
                 wxGetApp().update_wizard_login_page();
+#endif
                 this->show_action_buttons(this->ready_to_slice);
  
             } else {
@@ -960,7 +984,9 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
                 user_account->clear();
                 this->notification_manager->close_notification_of_type(NotificationType::UserAccountID);
                 this->notification_manager->push_notification(NotificationType::UserAccountID, NotificationManager::NotificationLevel::WarningNotificationLevel, _u8L("Failed to connect to Prusa Account."));
+#ifdef SLIC3R_WEBKIT
                 this->main_frame->remove_connect_webview_tab();
+#endif
                 // Update User name in TopBar
                 this->main_frame->refresh_account_menu(true);
                 // Update sidebar printer status
@@ -973,7 +999,9 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
             user_account->clear();
             this->notification_manager->close_notification_of_type(NotificationType::UserAccountID);
             this->notification_manager->push_notification(NotificationType::UserAccountID, NotificationManager::NotificationLevel::WarningNotificationLevel, _u8L("Failed to connect to Prusa Account."));
+#ifdef SLIC3R_WEBKIT
             this->main_frame->remove_connect_webview_tab();
+#endif
             // Update User name in TopBar
             this->main_frame->refresh_account_menu(true);
             // Update sidebar printer status
@@ -3713,7 +3741,9 @@ void Plater::priv::show_action_buttons(const bool ready_to_slice_) const
     DynamicPrintConfig* selected_printer_config = wxGetApp().preset_bundle->physical_printers.get_selected_printer_config();
     const auto print_host_opt = selected_printer_config ? selected_printer_config->option<ConfigOptionString>("print_host") : nullptr;
     const bool send_gcode_shown = print_host_opt != nullptr && !print_host_opt->value.empty();
+#ifdef SLIC3R_WEBKIT
     const bool connect_gcode_shown = print_host_opt == nullptr && can_show_upload_to_connect();
+#endif
     // when a background processing is ON, export_btn and/or send_btn are showing
     if (get_config_bool("background_processing"))
     {
@@ -3721,7 +3751,9 @@ void Plater::priv::show_action_buttons(const bool ready_to_slice_) const
 		if (sidebar->show_reslice(false) |
 			sidebar->show_export(true) |
 			sidebar->show_send(send_gcode_shown) |
-            sidebar->show_connect(connect_gcode_shown) |
+#ifdef SLIC3R_WEBKIT
+                        sidebar->show_connect(connect_gcode_shown) |
+#endif
 			sidebar->show_export_removable(removable_media_status.has_removable_drives))
             sidebar->Layout();
     }
@@ -3733,8 +3765,11 @@ void Plater::priv::show_action_buttons(const bool ready_to_slice_) const
         if (sidebar->show_reslice(ready_to_slice) |
             sidebar->show_export(!ready_to_slice) |
             sidebar->show_send(send_gcode_shown && !ready_to_slice) |
+#ifdef SLIC3R_WEBKIT
             sidebar->show_connect(connect_gcode_shown && !ready_to_slice) |
-			sidebar->show_export_removable(!ready_to_slice && removable_media_status.has_removable_drives))
+#endif
+	    sidebar->show_export_removable(!ready_to_slice && removable_media_status.has_removable_drives))
+
             sidebar->Layout();
     }
 }
@@ -6047,6 +6082,8 @@ bool load_secret(const std::string& id, const std::string& opt, std::string& usr
 #endif // wxUSE_SECRETSTORE 
 }
 }
+
+#ifdef SLIC3R_WEBKIT
 void Plater::connect_gcode()
 {
     assert(p->user_account->is_logged());
@@ -6103,6 +6140,7 @@ void Plater::connect_gcode()
     p->export_gcode(fs::path(), false, std::move(upload_job));
 
 }
+#endif //SLIC3R_WEBKIT
 
 void Plater::send_gcode()
 {

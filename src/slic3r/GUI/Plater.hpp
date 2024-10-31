@@ -228,7 +228,9 @@ public:
     void send_gcode();
     void send_gcode_inner(DynamicPrintConfig* physical_printer_config);
 	void eject_drive();
+#ifdef SLIC3R_WEBKIT
     void connect_gcode();
+#endif
     std::string get_upload_filename();
 
     void take_snapshot(const std::string &snapshot_name);

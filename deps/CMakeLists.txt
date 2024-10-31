@@ -191,7 +191,7 @@ endforeach()
 
 # This ugly append ensures that WebView2 was appended no matter what EXCLUDE_FROM_ALL is.
 # (Webview2 is not added by add_cmake_project)
-if (MSVC)
+if (MSVC AND SLIC3R_WEBKIT)
   list(APPEND DEPS_TO_BUILD WebView2)
 endif()
 

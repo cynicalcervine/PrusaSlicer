@@ -45,8 +45,10 @@ class Plater;
 class MainFrame;
 class PreferencesDialog;
 class GalleryDialog;
+#ifdef SLIC3R_WEBKIT
 class ConnectWebViewPanel; 
 class PrinterWebViewPanel;
+#endif
 
 enum QuickSlice
 {
@@ -98,10 +100,12 @@ class MainFrame : public DPIFrame
     size_t      m_last_selected_tab;
     Search::OptionsSearcher m_searcher;
 
+#ifdef SLIC3R_WEBKIT
     ConnectWebViewPanel* m_connect_webview{ nullptr };
     bool                 m_connect_webview_added{ false };
     PrinterWebViewPanel* m_printer_webview{ nullptr };
     bool                 m_printer_webview_added{ false };
+#endif
 
     std::string     get_base_name(const wxString &full_name, const char *extension = nullptr) const;
     std::string     get_dir_name(const wxString &full_name) const;
@@ -214,6 +218,7 @@ public:
     void        add_to_recent_projects(const wxString& filename);
     void        technology_changed();
 
+#ifdef SLIC3R_WEBKIT
     void    add_connect_webview_tab();
     void    remove_connect_webview_tab();
 
@@ -225,6 +230,7 @@ public:
     bool    get_printer_webview_tab_added() const { return m_printer_webview_added; }
     void    set_printer_webview_api_key(const std::string& key);
     void    set_printer_webview_credentials(const std::string& usr, const std::string& psk);
+#endif
 
     void    refresh_account_menu(bool avatar = false);
 

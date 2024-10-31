@@ -14,23 +14,29 @@ if (UNIX AND NOT APPLE) # wxWidgets will not use char as the underlying type for
     set (_unicode_utf8 ON)
 endif()
 
-if (MSVC)
-    set(_wx_webview "-DwxUSE_WEBVIEW_EDGE=ON")
+if (SLIC3R_WEBKIT)
+    if (MSVC)
+        set(_wx_webview "-DwxUSE_WEBVIEW_EDGE=ON")
+    else ()
+        set(_wx_webview "-DwxUSE_WEBVIEW=ON")
+    endif ()
 
+    if (UNIX AND NOT APPLE)
+        set(_wx_secretstore "-DwxUSE_SECRETSTORE=OFF")
+    else ()
+        set(_wx_secretstore "-DwxUSE_SECRETSTORE=ON")
+    endif ()
 else ()
-    set(_wx_webview "-DwxUSE_WEBVIEW=ON")
-endif ()
-
-if (UNIX AND NOT APPLE)
+    set(_wx_webview "-DwxUSE_WEBVIEW=OFF")
     set(_wx_secretstore "-DwxUSE_SECRETSTORE=OFF")
-else ()
-    set(_wx_secretstore "-DwxUSE_SECRETSTORE=ON")
 endif ()
+
+
 
 add_cmake_project(wxWidgets
     URL https://github.com/prusa3d/wxWidgets/archive/323a465e577e03f330e2e6a4c78e564d125340cb.zip
     URL_HASH SHA256=B538E4AD3CC93117932F4DED70C476D6650F9C70A9D4055A08F3693864C47465
-    PATCH_COMMAND COMMAND ${PATCH_CMD} ${CMAKE_CURRENT_LIST_DIR}/webview.patch
+    $<$<BOOL:${SLIC3R_WEBKIT}>:PATCH_COMMAND COMMAND ${PATCH_CMD} ${CMAKE_CURRENT_LIST_DIR}/webview.patch>
     CMAKE_ARGS
         "-DCMAKE_DEBUG_POSTFIX:STRING="
         -DwxBUILD_PRECOMP=ON
@@ -60,7 +66,7 @@ add_cmake_project(wxWidgets
 set(DEP_wxWidgets_DEPENDS ZLIB PNG EXPAT JPEG NanoSVG)
 
 
-if (MSVC)
+if (MSVC AND SLIC3R_WEBKIT)
     # After the build, copy the WebView2Loader.dll into the installation directory.
     # This should probably be done better.
     add_custom_command(TARGET dep_wxWidgets POST_BUILD

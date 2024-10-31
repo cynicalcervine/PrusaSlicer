@@ -125,7 +125,9 @@ public:
     bool show_export(bool show) const;
     bool show_send(bool show) const;
     bool show_export_removable(bool show) const;
+#ifdef SLIC3R_WEBKIT
     bool show_connect(bool show) const;
+#endif
 
     void collapse(bool collapse);
     void set_extruders_count(size_t extruders_count);

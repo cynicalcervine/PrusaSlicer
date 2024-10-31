@@ -35,7 +35,11 @@ if (SLIC3R_GUI)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set (wxWidgets_CONFIG_OPTIONS "--toolkit=gtk${SLIC3R_GTK}")
     endif ()
-    find_package(wxWidgets 3.2 MODULE REQUIRED COMPONENTS base core adv html gl webview)
+    if (SLIC3R_WEBKIT)
+        find_package(wxWidgets 3.2 MODULE REQUIRED COMPONENTS base core adv html gl webview)
+    else()
+        find_package(wxWidgets 3.2 MODULE REQUIRED COMPONENTS base core adv html gl)
+    endif()
 
     include(${wxWidgets_USE_FILE})
 
@@ -199,7 +203,7 @@ if (WIN32)
                 VERBATIM
             )
 
-            if (SLIC3R_GUI)
+            if (SLIC3R_WEBKIT)
                 add_custom_command(TARGET PrusaSlicer POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy
                     "${wxWidgets_ROOT_DIR}/bin/WebView2Loader.dll"
@@ -213,7 +217,7 @@ if (WIN32)
             COMMENT "Symlinking the resources directory into the build tree"
             VERBATIM
         )
-        if (SLIC3R_GUI)
+        if (SLIC3R_WEBKIT)
             add_custom_command(TARGET PrusaSlicer POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${wxWidgets_ROOT_DIR}/bin/WebView2Loader.dll"

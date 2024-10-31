@@ -127,7 +127,9 @@ public:
         TYPE_PHYSICAL_PRINTER,
         // This type is here to support search through the Preferences
         TYPE_PREFERENCES,
+#ifdef SLIC3R_WEBKIT
         TYPE_WEBVIEW,
+#endif
     };
 
     Type                type        = TYPE_INVALID;

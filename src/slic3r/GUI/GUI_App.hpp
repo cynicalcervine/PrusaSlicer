@@ -427,7 +427,9 @@ public:
     void            select_filament_from_connect(const std::string& cmd);
     void            handle_connect_request_printer_select(const std::string& cmd);
     void            handle_connect_request_printer_select_inner(const std::string& cmd);
+#ifdef SLIC3R_WEBKIT
     void            show_printer_webview_tab();
+#endif
     // return true if preset vas invisible and we have to installed it to make it selectable
     bool            select_printer_preset(const Preset* printer_preset);
     bool            select_filament_preset(const Preset* filament_preset, size_t extruder_index);

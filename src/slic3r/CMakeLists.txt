@@ -27,11 +27,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/UserAccountUtils.hpp
     GUI/UserAccount.cpp
     GUI/UserAccount.hpp
-    GUI/WebViewDialog.cpp
-    GUI/WebViewDialog.hpp
-    GUI/WebView.cpp
-    GUI/WebView.hpp
-    GUI/WebViewPlatformUtils.hpp
     GUI/SysInfoDialog.cpp
     GUI/SysInfoDialog.hpp
     GUI/KBShortcutsDialog.cpp
@@ -218,8 +213,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/ConfigWizard.cpp
     GUI/ConfigWizard.hpp
     GUI/ConfigWizard_private.hpp
-    GUI/ConfigWizardWebViewPage.cpp
-    GUI/ConfigWizardWebViewPage.hpp
     GUI/MsgDialog.cpp
     GUI/MsgDialog.hpp
     GUI/UpdateDialogs.cpp
@@ -384,6 +377,34 @@ set(SLIC3R_GUI_SOURCES
 
 find_package(NanoSVG REQUIRED)
 
+if (SLIC3R_WEBKIT)
+   list(APPEND SLIC3R_GUI_SOURCES
+           GUI/WebViewDialog.cpp
+           GUI/WebViewDialog.hpp
+           GUI/WebView.cpp
+           GUI/WebView.hpp
+           GUI/WebViewPlatformUtils.hpp
+           GUI/ConfigWizardWebViewPage.cpp
+           GUI/ConfigWizardWebViewPage.hpp
+    )
+
+    if (APPLE)
+        list(APPEND SLIC3R_GUI_SOURCES
+                GUI/WebViewPlatformUtilsMac.mm
+        )
+    elseif (WIN32)
+        list(APPEND SLIC3R_GUI_SOURCES
+                GUI/WebViewPlatformUtilsWin32.cpp
+        )
+    else ()
+        list(APPEND SLIC3R_GUI_SOURCES
+                GUI/WebViewPlatformUtilsLinux.cpp
+        )
+    endif ()
+
+endif()
+
+
 if (APPLE)
     list(APPEND SLIC3R_GUI_SOURCES
             Utils/RetinaHelperImpl.mm
@@ -396,19 +417,10 @@ if (APPLE)
             GUI/Mouse3DHandlerMac.mm
             GUI/InstanceCheckMac.mm
             GUI/InstanceCheckMac.h
-            GUI/WebViewPlatformUtilsMac.mm
 
     )
     FIND_LIBRARY(DISKARBITRATION_LIBRARY DiskArbitration)
     FIND_LIBRARY(COREWLAN_LIBRARY CoreWLAN)
-elseif (WIN32)
-    list(APPEND SLIC3R_GUI_SOURCES
-            GUI/WebViewPlatformUtilsWin32.cpp
-    )
-else() # Linux
-    list(APPEND SLIC3R_GUI_SOURCES
-            GUI/WebViewPlatformUtilsLinux.cpp
-    )
 endif ()
 
 add_library(libslic3r_gui STATIC ${SLIC3R_GUI_SOURCES})
@@ -463,10 +475,14 @@ endif ()
 # link these libraries.
 if (UNIX AND NOT APPLE)
     find_package(GTK${SLIC3R_GTK} REQUIRED)
-    find_package(PkgConfig REQUIRED)
 
-    pkg_search_module(WEBKIT2GTK REQUIRED IMPORTED_TARGET webkit2gtk-4.0 webkit2gtk-4.1)
-    target_link_libraries(libslic3r_gui PUBLIC ${GTK${SLIC3R_GTK}_LIBRARIES} fontconfig PkgConfig::WEBKIT2GTK)
+    if (SLIC3R_WEBKIT)
+        find_package(PkgConfig REQUIRED)
+        pkg_search_module(WEBKIT2GTK REQUIRED IMPORTED_TARGET webkit2gtk-4.0 webkit2gtk-4.1)
+        target_link_libraries(libslic3r_gui PUBLIC ${GTK${SLIC3R_GTK}_LIBRARIES} fontconfig PkgConfig::WEBKIT2GTK)
+    else ()
+        target_link_libraries(libslic3r_gui PUBLIC ${GTK${SLIC3R_GTK}_LIBRARIES} fontconfig)
+    endif ()
 endif ()
 
 # Add a definition so that we can tell we are compiling slic3r.

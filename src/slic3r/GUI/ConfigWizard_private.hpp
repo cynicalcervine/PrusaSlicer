@@ -98,7 +98,9 @@ struct BundleMap : std::map<std::string /* = vendor ID */, Bundle>
 struct Materials;
 
 class RepositoryUpdateUIManager;
+#ifdef SLIC3R_WEBKIT
 class ConfigWizardWebViewPage;
+#endif
 
 struct PrinterPickerEvent;
 
@@ -633,7 +635,9 @@ struct ConfigWizard::priv
     wxButton *btn_cancel = nullptr;
 
     PageWelcome      *page_welcome = nullptr;
+#ifdef SLIC3R_WEBKIT
     ConfigWizardWebViewPage *page_login = nullptr;
+#endif
     PageUpdateManager*page_update_manager = nullptr;
     PageMaterials    *page_filaments = nullptr;
     PageMaterials    *page_sla_materials = nullptr;

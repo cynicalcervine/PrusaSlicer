@@ -1540,7 +1540,9 @@ bool GUI_App::on_init_inner()
     if (is_editor())
         update_mode(); // update view mode after fix of the object_list size
 
+#ifdef SLIC3R_WEBKIT
     show_printer_webview_tab();
+#endif
 
 #ifdef __APPLE__
     other_instance_message_handler()->bring_instance_forward();
@@ -3326,6 +3328,7 @@ bool GUI_App::run_wizard(ConfigWizard::RunReason reason, ConfigWizard::StartPage
     return res;
 }
 
+#ifdef SLIC3R_WEBKIT
 void GUI_App::update_wizard_login_page()
 {
     if (!m_config_wizard) {
@@ -3333,6 +3336,7 @@ void GUI_App::update_wizard_login_page()
     }
     m_config_wizard->update_login();
 }
+#endif
 
 void GUI_App::show_desktop_integration_dialog()
 {
@@ -4145,10 +4149,12 @@ void GUI_App::handle_connect_request_printer_select_inner(const std::string & ms
     select_filament_from_connect(msg);
 }
 
+#ifdef SLIC3R_WEBKIT
 void GUI_App::show_printer_webview_tab()
 {
     mainframe->show_printer_webview_tab(preset_bundle->physical_printers.get_selected_printer_config());
 }
+#endif
 
 
 

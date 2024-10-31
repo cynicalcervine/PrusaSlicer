@@ -64,7 +64,9 @@
 #include "GalleryDialog.hpp"
 #include "NotificationManager.hpp"
 #include "Preferences.hpp"
+#ifdef SLIC3R_WEBKIT
 #include "WebViewDialog.hpp"
+#endif
 #include "UserAccount.hpp"
 
 #ifdef _WIN32
@@ -801,14 +803,17 @@ void MainFrame::create_preset_tabs()
     add_created_tab(new TabSLAMaterial(m_tabpanel), "resin");
     add_created_tab(new TabPrinter(m_tabpanel), wxGetApp().preset_bundle->printers.get_edited_preset().printer_technology() == ptFFF ? "printer" : "sla_printer");
     
+#ifdef SLIC3R_WEBKIT
     m_connect_webview = new ConnectWebViewPanel(m_tabpanel);
     m_printer_webview = new PrinterWebViewPanel(m_tabpanel, L"");
     // new created tabs have to be hidden by default
     m_connect_webview->Hide();
     m_printer_webview->Hide();
+#endif
 
 }
 
+#ifdef SLIC3R_WEBKIT
 void MainFrame::add_connect_webview_tab()
 {
     if (m_connect_webview_added) {
@@ -828,6 +833,7 @@ void MainFrame::add_connect_webview_tab()
     m_connect_webview->load_default_url_delayed();
     m_connect_webview_added = true;
 }
+
 void MainFrame::remove_connect_webview_tab()
 {
     if (!m_connect_webview_added) {
@@ -917,10 +923,12 @@ void MainFrame::set_printer_webview_api_key(const std::string& key)
 {
     m_printer_webview->set_api_key(key);
 }
+
 void MainFrame::set_printer_webview_credentials(const std::string& usr, const std::string& psk)
 {
     m_printer_webview->set_credentials(usr, psk);
 }
+#endif // SLIC3R_WEBKIT
 
 void Slic3r::GUI::MainFrame::refresh_account_menu(bool avatar/* = false */)
 {
@@ -1185,10 +1193,12 @@ void MainFrame::on_sys_color_changed()
     for (Tab* tab : wxGetApp().tabs_list)
         tab->sys_color_changed();
 
+#ifdef SLIC3R_WEBKIT
     if (m_connect_webview)
         m_connect_webview->sys_color_changed();
     if (m_printer_webview)
         m_printer_webview->sys_color_changed();
+#endif
 
     MenuFactory::sys_color_changed(m_menubar);
 

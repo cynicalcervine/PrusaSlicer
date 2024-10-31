@@ -10,7 +10,9 @@
 // FIXME: extract absolute units -> em
 
 #include "ConfigWizard_private.hpp"
+#ifdef SLIC3R_WEBKIT
 #include "ConfigWizardWebViewPage.hpp"
+#endif
 
 #include <algorithm>
 #include <numeric>
@@ -2591,7 +2593,9 @@ void ConfigWizard::priv::load_pages()
     index->clear();
 
     index->add_page(page_welcome);
+#ifdef SLIC3R_WEBKIT
     index->add_page(page_login);
+#endif
     index->add_page(page_update_manager);
 
     if (is_config_from_archive) {
@@ -2778,7 +2782,11 @@ void ConfigWizard::priv::load_vendors()
 
 void ConfigWizard::priv::add_page(ConfigWizardPage *page)
 {
+#ifdef SLIC3R_WEBKIT
     const int proportion = (page == page_login || page == page_filaments || page == page_sla_materials);
+#else
+    const int proportion = (page == page_filaments | page == page_sla_materials);
+#endif
     hscroll_sizer->Add(page, proportion, wxEXPAND);
     all_pages.push_back(page);
 }
@@ -4012,7 +4020,9 @@ ConfigWizard::ConfigWizard(wxWindow *parent)
     wxGetApp().SetWindowVariantForButton(p->btn_cancel);
 
     p->add_page(p->page_welcome = new PageWelcome(this));
+#ifdef SLIC3R_WEBKIT
     p->add_page(p->page_login = new ConfigWizardWebViewPage(this));
+#endif
     p->add_page(p->page_update_manager = new PageUpdateManager(this));
 
     // other pages will be loaded later after confirm repositories selection
@@ -4165,6 +4175,7 @@ bool ConfigWizard::run(RunReason reason, StartPage start_page)
     }
 }
 
+#ifdef SLIC3R_WEBKIT
 void ConfigWizard::update_login()
 {
     if (p->page_login && p->page_login->login_changed()) {
@@ -4174,6 +4185,7 @@ void ConfigWizard::update_login()
         p->page_update_manager->manager->update();
     }
 }
+#endif
 
 const wxString& ConfigWizard::name(const bool from_menu/* = false*/)
 {

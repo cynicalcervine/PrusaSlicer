@@ -496,7 +496,9 @@ Sidebar::Sidebar(Plater *parent)
 
     init_btn(&m_btn_export_gcode, _L("Export G-code") + dots , scaled_height);
     init_btn(&m_btn_reslice     , _L("Slice now")            , scaled_height);
+#ifdef SLIC3R_WEBKIT
     init_btn(&m_btn_connect_gcode, _L("Send to Connect"), scaled_height);
+#endif
 
     enable_buttons(false);
 
@@ -504,7 +506,9 @@ Sidebar::Sidebar(Plater *parent)
 
     auto* complect_btns_sizer = new wxBoxSizer(wxHORIZONTAL);
     complect_btns_sizer->Add(m_btn_export_gcode, 1, wxEXPAND);
+#ifdef SLIC3R_WEBKIT
     complect_btns_sizer->Add(m_btn_connect_gcode, 1, wxEXPAND | wxLEFT, margin_5);
+#endif
     complect_btns_sizer->Add(m_btn_send_gcode, 0, wxLEFT, margin_5);
 	complect_btns_sizer->Add(m_btn_export_gcode_removable, 0, wxLEFT, margin_5);
 
@@ -548,7 +552,9 @@ Sidebar::Sidebar(Plater *parent)
 
     m_btn_send_gcode->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { m_plater->send_gcode(); });
     m_btn_export_gcode_removable->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { m_plater->export_gcode(true); });
+#ifdef SLIC3R_WEBKIT
     m_btn_connect_gcode->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { m_plater->connect_gcode(); });
+#endif
 
     this->Bind(wxEVT_COMBOBOX, &Sidebar::on_select_preset, this);
 
@@ -782,8 +788,13 @@ void Sidebar::sys_color_changed()
         wxGetApp().UpdateDarkUI(win);
     for (wxWindow* win : std::vector<wxWindow*>{ m_scrolled_panel, m_presets_panel })
         wxGetApp().UpdateAllStaticTextDarkUI(win);
+#ifdef SLIC3R_WEBKIT
     for (wxWindow* btn : std::vector<wxWindow*>{ m_btn_reslice, m_btn_export_gcode, m_btn_connect_gcode })
         wxGetApp().UpdateDarkUI(btn, true);
+#else
+    for (wxWindow* btn : std::vector<wxWindow*>{ m_btn_reslice, m_btn_export_gcode })
+        wxGetApp().UpdateDarkUI(btn, true);
+#endif
 
     m_frequently_changed_parameters->sys_color_changed();
     m_object_settings              ->sys_color_changed();
@@ -1076,14 +1087,18 @@ void Sidebar::enable_buttons(bool enable)
     m_btn_export_gcode->Enable(enable);
     m_btn_send_gcode->Enable(enable);
     m_btn_export_gcode_removable->Enable(enable);
+#ifdef SLIC3R_WEBKIT
     m_btn_connect_gcode->Enable(enable);
+#endif
 }
 
 bool Sidebar::show_reslice(bool show)          const { return m_btn_reslice->Show(show); }
 bool Sidebar::show_export(bool show)           const { return m_btn_export_gcode->Show(show); }
 bool Sidebar::show_send(bool show)             const { return m_btn_send_gcode->Show(show); }
 bool Sidebar::show_export_removable(bool show) const { return m_btn_export_gcode_removable->Show(show); }
+#ifdef SLIC3R_WEBKIT
 bool Sidebar::show_connect(bool show)          const { return m_btn_connect_gcode->Show(show); }
+#endif
 
 
 void Sidebar::update_mode()
@@ -1112,7 +1127,9 @@ void Sidebar::set_btn_label(const ActionButtonType btn_type, const wxString& lab
     case ActionButtonType::Reslice:   m_btn_reslice->SetLabelText(label);        break;
     case ActionButtonType::Export:    m_btn_export_gcode->SetLabelText(label);   break;
     case ActionButtonType::SendGCode: /*m_btn_send_gcode->SetLabelText(label);*/ break;
+#ifdef SLIC3R_WEBKIT
     case ActionButtonType::Connect: /*m_btn_connect_gcode->SetLabelText(label);*/ break;
+#endif
     }
 }
 

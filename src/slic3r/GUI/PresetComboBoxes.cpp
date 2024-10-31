@@ -416,7 +416,9 @@ void PresetComboBox::edit_physical_printer()
     PhysicalPrinterDialog dlg(this->GetParent(),this->GetString(this->GetSelection()));
     if (dlg.ShowModal() == wxID_OK) {
         update();
+#ifdef SLIC3R_WEBKIT
         wxGetApp().show_printer_webview_tab();
+#endif
     }
 }
 
@@ -424,7 +426,9 @@ void PresetComboBox::add_physical_printer()
 {
     if (PhysicalPrinterDialog(this->GetParent(), wxEmptyString).ShowModal() == wxID_OK) {
         update();
+#ifdef SLIC3R_WEBKIT
         wxGetApp().show_printer_webview_tab();
+#endif
     }
 }
 
@@ -655,8 +659,10 @@ bool PresetComboBox::selection_is_changed_according_to_physical_printers()
         else if (dynamic_cast<TabPresetComboBox*>(this)!=nullptr)
             wxGetApp().sidebar().update_presets(m_type);
 
+#ifdef SLIC3R_WEBKIT
         // Check and show "Physical printer" page if needed
         wxGetApp().show_printer_webview_tab();
+#endif
 
         return true;
     }

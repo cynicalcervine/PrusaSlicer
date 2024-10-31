@@ -192,7 +192,7 @@ public:
 	void push_slicing_warning_notification(const std::string& text, bool gray, ObjectID oid, int warning_step, const std::string& hypertext = "", std::function<bool(wxEvtHandler*)> callback = std::function<bool(wxEvtHandler*)>());
 	// marks slicing errors as gray
 	void set_all_slicing_errors_gray(bool g);
-	// marks slicing warings as gray
+	// marks slicing warnings as gray
 	void set_all_slicing_warnings_gray(bool g);
 //	void set_slicing_warning_gray(const std::string& text, bool g);
 	// immediately stops showing slicing errors
